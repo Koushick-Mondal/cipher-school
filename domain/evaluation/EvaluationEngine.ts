@@ -32,7 +32,7 @@ export class EvaluationEngine {
           deterministicScore: deterministicResult.score,
           llmScore: llmResult.score,
           summary: llmResult.summary || '',
-          feedback: JSON.stringify(deterministicResult.findings),
+          feedback: llmResult.feedback || JSON.stringify(deterministicResult.findings),
           strengths: JSON.stringify(llmResult.strengths || []),
           weaknesses: JSON.stringify(llmResult.weaknesses || []),
           recommendations: JSON.stringify(llmResult.recommendations || []),
@@ -70,7 +70,8 @@ export class EvaluationEngine {
       });
 
       return {
-        ...evaluation,
+        id: evaluation.id,
+        attemptId: evaluation.attemptId,
         overallScore: evaluation.overallScore ?? 0,
         deterministicScore: evaluation.deterministicScore ?? 0,
         llmScore: evaluation.llmScore ?? 0,
@@ -84,7 +85,8 @@ export class EvaluationEngine {
           score: c.score,
           maxScore: c.maxScore,
           feedback: c.feedback || ''
-        }))
+        })),
+        createdAt: evaluation.createdAt
       };
 
     } catch (error) {
