@@ -1,0 +1,74 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String    @id @default(uuid())
+  name      String?
+  email     String    @unique
+  createdAt DateTime  @default(now())
+  attempts  Attempt[]
+}
+
+model Problem {
+  id               String    @id @default(uuid())
+  title            String
+  slug             String    @unique
+  description      String
+  difficulty       String
+  requirements     String    // Stored as JSON string
+  constraints      String    // Stored as JSON string
+  expectedConcepts String    // Stored as JSON string
+  createdAt        DateTime  @default(now())
+  attempts         Attempt[]
+}
+
+model Attempt {
+  id          String    @id @default(uuid())
+  userId      String
+  problemId   String
+  status      String    @default("DRAFT")
+  code        String?
+  classDesign String?
+  diagram     String?
+  explanation String?
+  createdAt   DateTime  @default(now())
+  submittedAt DateTime?
+
+  user        User        @relation(fields: [userId], references: [id])
+  problem     Problem     @relation(fields: [problemId], references: [id])
+  evaluation  Evaluation?
+}
+
+model Evaluation {
+  id                 String   @id @default(uuid())
+  attemptId          String   @unique
+  overallScore       Int?
+  deterministicScore Int?
+  llmScore           Int?
+  feedback           String?
+  strengths          String   // JSON string
+  weaknesses         String   // JSON string
+  recommendations    String   // JSON string
+  summary            String?
+  createdAt          DateTime @default(now())
+
+  attempt            Attempt               @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  criteria           EvaluationCriterion[]
+}
+
+model EvaluationCriterion {
+  id           String     @id @default(uuid())
+  evaluationId String
+  name         String
+  score        Int
+  maxScore     Int
+  feedback     String?
+
+  evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+}
